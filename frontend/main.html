@@ -1,0 +1,100 @@
+﻿<!doctype html>
+<html>
+<head>
+    <title>Digit Recognizer</title>
+    <style>
+        html {
+          /* Turn off default touch actions in the browser since we're supporting touch edits */
+          touch-action: none;
+        }
+    </style>
+    <script type="text/javascript">
+        function onMouseDown(ev) {
+            begin_draw = true;
+        }
+
+        function onMouseMove(ev) {
+            if (!begin_draw)
+                return;
+
+            var x = ev.offsetX;
+            var y = ev.offsetY;
+
+            var radius = 7;
+
+            context.beginPath();
+            context.arc(x, y, radius, 0 /*startAngle*/, 2 * Math.PI /*endAngle*/, false /*anticlockwise*/);
+            context.fill();
+            context.closePath();
+        }
+
+        function onMouseUp(ev) {
+            begin_draw = false;
+        }
+
+        function getOffset(obj) {
+            var offsetLeft = 0;
+            var offsetTop = 0;
+            do {
+                if (!isNaN(obj.offsetLeft)) {
+                    offsetLeft += obj.offsetLeft;
+                }
+                if (!isNaN(obj.offsetTop)) {
+                    offsetTop += obj.offsetTop;
+                }
+            } while (obj = obj.offsetParent);
+            return { left: offsetLeft, top: offsetTop };
+        }
+
+        function onTouchMove(ev) {
+            context.beginPath();
+            if (ev.touches.length == 1) {
+                var touch = ev.touches[0];
+                var offset = getOffset(touch.target);
+                var x = touch.clientX - offset.left;
+                var y = touch.clientY - offset.top;
+                var radius = 7;
+                context.arc(x, y, radius, 0 /*startAngle*/, 2 * Math.PI /*endAngle*/, false /*anticlockwise*/);
+                context.fill();
+            }
+        }
+
+        function setupCanvasListeners(canvasElement) {
+            // Mouse-based movements
+            canvasElement.addEventListener('mousedown', onMouseDown, false /*useCapture*/);
+            canvasElement.addEventListener('mousemove', onMouseMove, false /*useCapture*/);
+            canvasElement.addEventListener('mouseup', onMouseUp, false /*useCapture*/);
+
+            // Touch-based movements
+            canvasElement.addEventListener('touchmove', onTouchMove, false /*useCapture*/);
+        }
+
+        function setupPageGlobals(canvasElement) {
+            context = canvasElement.getContext("2d");
+            begin_draw = false;
+        }
+
+        function onWindowLoaded() {
+            var canvasElement = document.getElementById("idCanvas1");
+            setupPageGlobals(canvasElement);
+            setupCanvasListeners(canvasElement);
+        }
+
+        window.addEventListener("load", onWindowLoaded, false /*useCapture*/);
+    </script>
+</head>
+<body>
+    <div>
+        <canvas id="idCanvas1" width="500" height="500" style="border:1px solid #000000;">
+            Your browser does not support the HTML 5 Canvas.
+        </canvas>
+    </div>
+    <div>
+        <h1>Finger Painting</h1>
+        <p>
+            Click/tap a color below to select a color, and then drag/swipe on the
+            canvas above to draw a picture.
+        </p>
+    </div>
+</body>
+</html>
