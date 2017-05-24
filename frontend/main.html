@@ -11,10 +11,14 @@
     <script type="text/javascript">
         var vApp = {};
 
-        function onMouseDown(ev) {
+        function HandlePointerDown() {
             vApp.begin_draw = true;
             vApp.xPrev = -1;
             vApp.yPrev = -1;
+        }
+
+        function onMouseDown(ev) {
+            HandlePointerDown();
         }
 
         function DrawPointerCircle(x, y, radius) {
@@ -98,10 +102,14 @@
             HandlePointerMove(vApp.xPrev, vApp.yPrev, x, y, radius);
         }
 
-        function onMouseUp(ev) {
+        function HandlePointerEnd() {
             vApp.xPrev = -1;
             vApp.yPrev = -1;
             vApp.begin_draw = false;
+        }
+
+        function onMouseUp(ev) {
+            HandlePointerEnd();
         }
 
         function getOffset(obj) {
@@ -119,15 +127,11 @@
         }
 
         function onTouchStart(ev) {
-            vApp.begin_draw = true;
-            vApp.xPrev = -1;
-            vApp.yPrev = -1;
+            HandlePointerDown();
         }
 
         function onTouchEnd(ev) {
-            vApp.xPrev = -1;
-            vApp.yPrev = -1;
-            vApp.begin_draw = false;
+            HandlePointerEnd();
         }
 
         function onTouchMove(ev) {
