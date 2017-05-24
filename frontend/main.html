@@ -78,19 +78,11 @@
         }
 
         function HandlePointerMove(xPrev, yPrev, xCur, yCur, radius) {
-            if (xPrev == -1 || yPrev == -1) {
-                // if xPrev or yPrev hasn't been setup, then
-                // all we need to draw is a circle.
-                //console.log("HandlePointerMove")
-                DrawPointerCircle(xCur, yCur, radius);
-                vApp.xPrev = xCur;
-                vApp.yPrev = yCur;
-                return;
-            }
+            if (xPrev == -1 || yPrev == -1)
+                DrawPointerCircle(xCur, yCur, radius); // no prev, just draw circle
+            else
+                DrawPointerMove(xPrev, yPrev, xCur, yCur, radius);
 
-            DrawPointerMove(xPrev, yPrev, xCur, yCur, radius);
-
-            // Setup new xPrev/yPrev for next potential call to onMouseMove
             vApp.xPrev = xCur;
             vApp.yPrev = yCur;
         }
@@ -126,17 +118,29 @@
             return { left: offsetLeft, top: offsetTop };
         }
 
+        function onTouchStart(ev) {
+            vApp.begin_draw = true;
+            vApp.xPrev = -1;
+            vApp.yPrev = -1;
+        }
+
+        function onTouchEnd(ev) {
+            vApp.xPrev = -1;
+            vApp.yPrev = -1;
+            vApp.begin_draw = false;
+        }
+
         function onTouchMove(ev) {
-            context.beginPath();
-            if (ev.touches.length == 1) {
-                var touch = ev.touches[0];
-                var offset = getOffset(touch.target);
-                var x = touch.clientX - offset.left;
-                var y = touch.clientY - offset.top;
-                var radius = 7;
-                context.arc(x, y, radius, 0 /*startAngle*/, 2 * Math.PI /*endAngle*/, false /*anticlockwise*/);
-                context.fill();
-            }
+            if (ev.touches.length != 1)
+                return;
+
+            var touch = ev.touches[0];
+            var offset = getOffset(touch.target);
+            var x = touch.clientX - offset.left;
+            var y = touch.clientY - offset.top;
+            var radius = 7;
+
+            HandlePointerMove(vApp.xPrev, vApp.yPrev, x, y, radius);
         }
 
         function setupCanvasListeners(canvasElement) {
@@ -147,6 +151,8 @@
 
             // Touch-based movements
             canvasElement.addEventListener('touchmove', onTouchMove, false /*useCapture*/);
+            canvasElement.addEventListener('touchstart', onTouchStart, false /*useCapture*/);
+            canvasElement.addEventListener('touchend', onTouchEnd, false /*useCapture*/);
         }
 
         function setupPageGlobals(canvasElement) {
