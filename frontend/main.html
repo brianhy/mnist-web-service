@@ -9,12 +9,14 @@
         }
     </style>
     <script type="text/javascript">
+        var vApp = {};
+
         function onMouseDown(ev) {
-            begin_draw = true;
+            vApp.begin_draw = true;
         }
 
         function onMouseMove(ev) {
-            if (!begin_draw)
+            if (!vApp.begin_draw)
                 return;
 
             var x = ev.offsetX;
@@ -29,7 +31,7 @@
         }
 
         function onMouseUp(ev) {
-            begin_draw = false;
+            vApp.begin_draw = false;
         }
 
         function getOffset(obj) {
@@ -71,7 +73,7 @@
 
         function setupPageGlobals(canvasElement) {
             context = canvasElement.getContext("2d");
-            begin_draw = false;
+            vApp.begin_draw = false;
         }
 
         function onWindowLoaded() {
