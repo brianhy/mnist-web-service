@@ -97,9 +97,8 @@
 
             var x = ev.offsetX;
             var y = ev.offsetY;
-            var radius = 7;
 
-            HandlePointerMove(vApp.xPrev, vApp.yPrev, x, y, radius);
+            HandlePointerMove(vApp.xPrev, vApp.yPrev, x, y, vApp.radius);
         }
 
         function HandlePointerEnd() {
@@ -142,9 +141,8 @@
             var offset = getOffset(touch.target);
             var x = touch.clientX - offset.left;
             var y = touch.clientY - offset.top;
-            var radius = 7;
 
-            HandlePointerMove(vApp.xPrev, vApp.yPrev, x, y, radius);
+            HandlePointerMove(vApp.xPrev, vApp.yPrev, x, y, vApp.radius);
         }
 
         function setupCanvasListeners(canvasElement) {
@@ -164,6 +162,7 @@
             vApp.begin_draw = false;
             vApp.xPrev = -1;
             vApp.yPrev = -1;
+            vApp.radius = 7;
         }
 
         function onWindowLoaded() {
