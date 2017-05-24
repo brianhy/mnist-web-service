@@ -4,8 +4,8 @@
     <title>Digit Recognizer</title>
     <style>
         canvas {
-          /* Turn off all default touch actions but pinch-zoom in the canvas elements */
-          touch-action: pinch-zoom;
+            /* Turn off all default touch actions but pinch-zoom in the canvas elements */
+            touch-action: pinch-zoom;
         }
     </style>
     <script type="text/javascript">
@@ -13,6 +13,86 @@
 
         function onMouseDown(ev) {
             vApp.begin_draw = true;
+            vApp.xPrev = -1;
+            vApp.yPrev = -1;
+        }
+
+        function DrawPointerCircle(x, y, radius) {
+            context.beginPath();
+            context.arc(x, y, radius, 0 /*startAngle*/, 2 * Math.PI /*endAngle*/, false /*anticlockwise*/);
+            context.fill();
+            context.closePath();
+        }
+
+        // Draw a connecting structure from (xPrev, yPrev) to (xCur, yCur).
+        //
+        // Browsers (understandably) don't pump pointer notifications at rate
+        // that would allow a nice drawing experience, so we fill in the gaps.
+        // We fill in the gaps by putting a rectangle in between the two circles.
+        // The rectangle's edges span the diameters of the two circles.
+        function DrawPointerMove(xPrev, yPrev, xCur, yCur, radius) {
+            // Below, we draw from "left to right".  We setup x*, y*
+            // so that left to right means (x1, y1) -> (x2, y2).
+            var x1;
+            var y1;
+            var x2;
+            var y2;
+
+            if (xPrev <= xCur)
+            {
+                x1 = xPrev;
+                y1 = yPrev;
+                x2 = xCur;
+                y2 = yCur;
+            }
+            else
+            {
+                x1 = xCur;
+                y1 = yCur;
+                x2 = xPrev;
+                y2 = yPrev;
+            }
+
+            // We assume that the circle at the beginning of the rectangle
+            // was already drawn at initial pointer move, so we won't draw
+            // it here.
+
+            //
+            // Draw the rectangle
+            //
+            // To connect two arbitrary dots, we may (and likely) will need to
+            // draw a rotated rectangle.  We do that by translating and rotating
+            // coordinate space, then draw rectangle.
+            context.save(); // save/restore b/c of translate/rotate
+            var rectLength = Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+            context.translate(x1, y1);
+            rotAngle = Math.atan2(y1 - y2, x2 - x1);
+            context.rotate(-rotAngle);
+            context.fillRect(0, -radius, rectLength, 2 * radius);
+            context.restore();
+
+            //
+            // Draw the circle at end of rectangle
+            //
+            DrawPointerCircle(xCur, yCur, radius);
+        }
+
+        function HandlePointerMove(xPrev, yPrev, xCur, yCur, radius) {
+            if (xPrev == -1 || yPrev == -1) {
+                // if xPrev or yPrev hasn't been setup, then
+                // all we need to draw is a circle.
+                //console.log("HandlePointerMove")
+                DrawPointerCircle(xCur, yCur, radius);
+                vApp.xPrev = xCur;
+                vApp.yPrev = yCur;
+                return;
+            }
+
+            DrawPointerMove(xPrev, yPrev, xCur, yCur, radius);
+
+            // Setup new xPrev/yPrev for next potential call to onMouseMove
+            vApp.xPrev = xCur;
+            vApp.yPrev = yCur;
         }
 
         function onMouseMove(ev) {
@@ -21,16 +101,14 @@
 
             var x = ev.offsetX;
             var y = ev.offsetY;
-
             var radius = 7;
 
-            context.beginPath();
-            context.arc(x, y, radius, 0 /*startAngle*/, 2 * Math.PI /*endAngle*/, false /*anticlockwise*/);
-            context.fill();
-            context.closePath();
+            HandlePointerMove(vApp.xPrev, vApp.yPrev, x, y, radius);
         }
 
         function onMouseUp(ev) {
+            vApp.xPrev = -1;
+            vApp.yPrev = -1;
             vApp.begin_draw = false;
         }
 
@@ -74,6 +152,8 @@
         function setupPageGlobals(canvasElement) {
             context = canvasElement.getContext("2d");
             vApp.begin_draw = false;
+            vApp.xPrev = -1;
+            vApp.yPrev = -1;
         }
 
         function onWindowLoaded() {
